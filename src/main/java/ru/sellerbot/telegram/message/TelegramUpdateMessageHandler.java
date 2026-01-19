@@ -19,8 +19,6 @@ public class TelegramUpdateMessageHandler {
     private final TelegramCommandsDispatcher telegramCommandsDispatcher;
     private final TelegramAsyncMessageSender telegramAsyncMessageSender;
     private final TelegramVoiceHandler telegramVoiceHandler;
-    private final TelegramImageHandler telegramImageHandler;
-    private final TelegramVideoHandler telegramVideoHandler;
     private final ApplicationContext context;
 
     public TelegramTextHandler getTelegramTextHandler() {
@@ -66,12 +64,11 @@ public class TelegramUpdateMessageHandler {
             return telegramVoiceHandler.processVoice(message);
         } else if (message.hasText()) {
             return getTelegramTextHandler().processTextMessage(message);
-        } else if (message.hasPhoto() || (message.hasDocument() && isImageDocument(message))) {
-            return telegramImageHandler.processImage(message);
-        } else if (message.hasVideo()) {
-            return telegramVideoHandler.processVideo(message);
         }
-        return null;
+        return SendMessage.builder()
+                .chatId(message.getChatId())
+                .text("Сейчас поддерживаются только текст и голос. Пожалуйста, отправьте сообщение текстом.")
+                .build();
     }
 
     private SendMessage getErrorMessage(Throwable throwable, String chatId) {

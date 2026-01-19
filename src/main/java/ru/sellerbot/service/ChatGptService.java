@@ -20,4 +20,6 @@ public interface ChatGptService {
             List<Map<String, Object>> newImages
     );
 
+    String getSingleAnswer(String systemPrompt, String userMessage);
+
 }

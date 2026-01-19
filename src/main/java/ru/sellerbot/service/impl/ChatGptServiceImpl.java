@@ -148,4 +148,21 @@ public class ChatGptServiceImpl implements ChatGptService {
 
         return messageFromGpt.content().toString();
     }
+
+    @Override
+    public String getSingleAnswer(String systemPrompt, String userMessage) {
+        var system = new Message("system", systemPrompt);
+        var user = new Message("user", userMessage);
+
+        var request = new ChatCompletionRequest(
+                gptConfig.getModel(),
+                List.of(system, user),
+                1500,
+                0.7,
+                0.0
+        );
+
+        var response = openAIClient.createChatCompletion(request);
+        return response.choices().get(0).message().content().toString();
+    }
 }

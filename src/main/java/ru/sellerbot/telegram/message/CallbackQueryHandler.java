@@ -1,26 +1,21 @@
 package ru.sellerbot.telegram.message;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
-import ru.sellerbot.service.UserStateService;
 
 @Service
 @RequiredArgsConstructor
 public class CallbackQueryHandler {
 
-    private final UserStateService userStateService;
-    private final TelegramTextHandler telegramTextHandler;
-
     public SendMessage processCallbackQuery(CallbackQuery callbackQuery) {
         var chatId = callbackQuery.getMessage().getChatId();
-        var data = callbackQuery.getData();
-        var userData = userStateService.getUserData(chatId);
-
-        return telegramTextHandler.processCallbackQuery(data, chatId, userData);
+        return SendMessage.builder()
+                .chatId(chatId)
+                .text("Кнопки пока не поддерживаются в этой версии. Напишите ваш запрос текстом.")
+                .build();
     }
 
     public AnswerCallbackQuery answerCallbackQuery(CallbackQuery callbackQuery) {

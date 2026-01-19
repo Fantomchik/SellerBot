@@ -1,8 +1,13 @@
 package ru.sellerbot.model;
 
+import lombok.Builder;
+import lombok.Value;
+
+@Value
+@Builder
 public class PhonePrice {
     String model;
-    int basePrice;     // базовая цена
-    int minPrice;      // минимальная (ниже — нельзя)
-    int maxPrice;      // если вдруг редкая модель
+    Integer basePrice;   // средняя рыночная
+    Integer minPrice;    // нижняя граница (выкуп)
+    Integer maxPrice;    // верхняя граница (продажа)
 }
