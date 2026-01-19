@@ -1,0 +1,7 @@
+telegram:
+  bot:
+    username: ${TG_BOT_NICKNAME}
+    token: ${TG_BOT_TOKEN}
+
+openai:
+  token: ${OPENAI_TOKEN}
