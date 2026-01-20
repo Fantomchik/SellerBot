@@ -15,7 +15,9 @@ import ru.sellerbot.service.ConversationService;
 import ru.sellerbot.service.IntentDetectionService;
 import ru.sellerbot.service.NegotiationService;
 import ru.sellerbot.service.PhonePriceService;
+import ru.sellerbot.service.PriceRequestService;
 import ru.sellerbot.service.SessionService;
+import ru.sellerbot.util.ModelKeyNormalizer;
 
 @Service
 @RequiredArgsConstructor
@@ -27,9 +29,10 @@ public class ConversationServiceImpl implements ConversationService {
     private final SessionService sessionService;
     private final ChatGptService chatGptService;
     private final GptConfig gptConfig;
+    private final PriceRequestService priceRequestService;
 
     @Override
-    public SendMessage handleUserMessage(Long chatId, String text) {
+    public SendMessage handleUserMessage(Long chatId, Integer messageId, String text) {
         UserSession session = sessionService.getSession(chatId);
 
         // Если ждём цену от клиента
@@ -62,11 +65,20 @@ public class ConversationServiceImpl implements ConversationService {
             return buildPlain(chatId, "Уточните, пожалуйста, модель телефона (например, iPhone 13 Pro или Samsung Galaxy S23).");
         }
 
-        PhonePrice price = phonePriceService.getPhonePrice(session.getPhoneModel()).orElse(null);
+        String modelDisplay = session.getPhoneModel();
+        String modelKey = ModelKeyNormalizer.normalize(modelDisplay);
+        PhonePrice price = phonePriceService.getPhonePrice(modelKey).orElse(null);
         if (price == null) {
-            session.setState(DialogState.WAITING_MODEL);
+            priceRequestService.ensureOpenRequestAndSubscribeWaiter(
+                    modelKey,
+                    modelDisplay,
+                    chatId,
+                    messageId
+            );
+
+            session.setState(DialogState.HANDOVER_TO_MANAGER);
             sessionService.saveSession(session);
-            return buildPlain(chatId, "Не нашёл такую модель в прайс-листе. Напишите точное название модели.");
+            return buildPlain(chatId, "Этой модели пока нет в прайс-листе. Уточняю цену у менеджера и напишу вам, как только получу ответ.");
         }
 
         session.setPrice(price);

@@ -23,7 +23,7 @@ public class TelegramFileServiceImpl implements TelegramFileService {
 
     public TelegramFileServiceImpl(
             @Lazy DefaultAbsSender telegramSender,
-            @Value("${bot.token}") String botToken
+            @Value("${telegram.bot.token}") String botToken
     ) {
         this.telegramSender = telegramSender;
         this.botToken = botToken;

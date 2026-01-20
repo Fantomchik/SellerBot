@@ -1,10 +1,13 @@
 telegram:
   bot:
-    username: ${TG_BOT_NICKNAME}
-    token: ${TG_BOT_TOKEN}
+    username: BlyaBudu212Bot
+    token: самый-секретный-токен-из-@BotFather
+  manager:
+    chat-id: ${TG_MANAGER_CHAT_ID:0}
+    user-id: ${TG_MANAGER_USER_ID:0}
 
 openai:
-  token: ${OPENAI_TOKEN}
+  token: самый-секретный-токен-из-openai
 
 gpt:
   model: gpt-4o-mini
@@ -19,8 +22,8 @@ gpt:
 spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/sellerbot}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    username: ${DB_USERNAME:sellerbot_user}
+    password: ${DB_PASSWORD:sellerbot_pass}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -31,3 +34,8 @@ spring:
     show-sql: false
   flyway:
     enabled: true
+
+price:
+  defaults:
+    min-multiplier: ${PRICE_MIN_MULTIPLIER:0.90}
+    max-multiplier: ${PRICE_MAX_MULTIPLIER:1.10}

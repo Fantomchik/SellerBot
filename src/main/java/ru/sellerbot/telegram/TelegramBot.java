@@ -18,7 +18,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final TelegramUpdateMessageHandler telegramUpdateMessageHandler;
 
     public TelegramBot(
-            @Value("${bot.token}") String botToken,
+            @Value("${telegram.bot.token}") String botToken,
             TelegramUpdateMessageHandler telegramUpdateMessageHandler
     ) {
         super(new DefaultBotOptions(), botToken);
