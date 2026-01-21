@@ -1,4 +1,4 @@
-package ru.sellerbot.model;
+package ru.sellerbot.model.enums;
 
 public enum IntentType {
     BUY_PHONE,

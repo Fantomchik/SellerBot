@@ -3,6 +3,8 @@ package ru.sellerbot.model;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import ru.sellerbot.model.enums.DialogState;
+import ru.sellerbot.model.enums.IntentType;
 
 @Getter
 @Setter

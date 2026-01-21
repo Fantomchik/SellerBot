@@ -3,7 +3,7 @@ package ru.sellerbot.service.impl;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Service;
-import ru.sellerbot.model.DialogState;
+import ru.sellerbot.model.enums.DialogState;
 import ru.sellerbot.model.UserSession;
 import ru.sellerbot.service.SessionService;
 

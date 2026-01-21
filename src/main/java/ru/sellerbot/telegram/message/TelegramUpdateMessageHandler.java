@@ -2,6 +2,7 @@ package ru.sellerbot.telegram.message;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
@@ -9,7 +10,10 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.sellerbot.command.TelegramCommandsDispatcher;
+import ru.sellerbot.service.ConversationService;
+import ru.sellerbot.service.ManagerReplyProcessingService;
 import ru.sellerbot.service.TelegramAsyncMessageSender;
+import ru.sellerbot.service.impl.ChatGptServiceImpl;
 
 
 @Slf4j
@@ -20,6 +24,13 @@ public class TelegramUpdateMessageHandler {
     private final TelegramAsyncMessageSender telegramAsyncMessageSender;
     private final TelegramVoiceHandler telegramVoiceHandler;
     private final ApplicationContext context;
+    private final ChatGptServiceImpl chatGptService;
+    private final ManagerReplyProcessingService managerReplyProcessingService;
+    private final ConversationService conversationService;
+    @Value("${telegram.manager.chat-id}")
+    private Long managerChatId;
+    @Value("${telegram.manager.user-id}")
+    private Long managerUserId;
 
     public TelegramTextHandler getTelegramTextHandler() {
         return context.getBean(TelegramTextHandler.class);
@@ -39,6 +50,17 @@ public class TelegramUpdateMessageHandler {
 
         if (!update.hasMessage()) {
             return null;
+        }
+
+        if (update.hasMessage() && update.getMessage().hasText()) {
+            Long chatId = update.getMessage().getChatId();
+            Long userId = update.getMessage().getFrom() != null ? update.getMessage().getFrom().getId().longValue() : null;
+            if (chatId.equals(managerChatId) && managerUserId != null && managerUserId != 0L && userId != null && userId.equals(managerUserId)) {
+                // Обработка ответа менеджера
+                return managerReplyProcessingService.processManagerReply(update.getMessage());
+            }
+            // Для всех остальных сообщений — всегда бизнес-логика с deal-system-prompt
+            return conversationService.handleUserMessage(chatId, update.getMessage().getMessageId(), update.getMessage().getText());
         }
 
         var message = update.getMessage();

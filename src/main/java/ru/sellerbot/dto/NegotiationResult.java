@@ -1,6 +1,6 @@
 package ru.sellerbot.dto;
 
-import ru.sellerbot.model.NegotiationStatus;
+import ru.sellerbot.model.enums.NegotiationStatus;
 
 public record NegotiationResult(
         NegotiationStatus status,

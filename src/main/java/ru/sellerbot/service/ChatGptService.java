@@ -22,4 +22,5 @@ public interface ChatGptService {
 
     String getSingleAnswer(String systemPrompt, String userMessage);
 
+    String askGpt(String prompt);
 }

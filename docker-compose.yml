@@ -10,7 +10,9 @@ services:
       POSTGRES_PASSWORD: sellerbot_pass
     ports:
       - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-volumes:
-  pgdata:
+    # ВАЖНО: В тестовой среде volume отключён, база будет пересоздаваться при каждом запуске!
+    # Для продакшена обязательно раскомментировать volume ниже!
+    # volumes:
+    #   - pgdata:/var/lib/postgresql/data
+# volumes:
+#   pgdata:

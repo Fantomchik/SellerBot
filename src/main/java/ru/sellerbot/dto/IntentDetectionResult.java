@@ -1,6 +1,6 @@
 package ru.sellerbot.dto;
 
-import ru.sellerbot.model.IntentType;
+import ru.sellerbot.model.enums.IntentType;
 
 public record IntentDetectionResult(
         IntentType intent,

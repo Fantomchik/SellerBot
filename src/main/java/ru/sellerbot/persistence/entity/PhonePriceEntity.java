@@ -19,11 +19,14 @@ public class PhonePriceEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String modelKey;
+    @Column(nullable = false)
+    private String brand;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String model;
+
+    @Column(nullable = false)
+    private Integer storageGb;
 
     @Column(nullable = false)
     private Integer basePrice;

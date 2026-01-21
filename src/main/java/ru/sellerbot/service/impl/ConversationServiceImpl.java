@@ -4,12 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import ru.sellerbot.config.GptConfig;
+import ru.sellerbot.dto.GptDealResponse;
 import ru.sellerbot.dto.IntentDetectionResult;
 import ru.sellerbot.dto.NegotiationResult;
-import ru.sellerbot.model.DialogState;
-import ru.sellerbot.model.IntentType;
+import ru.sellerbot.model.enums.DialogState;
+import ru.sellerbot.model.enums.IntentType;
 import ru.sellerbot.model.PhonePrice;
 import ru.sellerbot.model.UserSession;
+import ru.sellerbot.service.ActionProcessingService;
 import ru.sellerbot.service.ChatGptService;
 import ru.sellerbot.service.ConversationService;
 import ru.sellerbot.service.IntentDetectionService;
@@ -30,9 +32,16 @@ public class ConversationServiceImpl implements ConversationService {
     private final ChatGptService chatGptService;
     private final GptConfig gptConfig;
     private final PriceRequestService priceRequestService;
+    private final ActionProcessingService actionProcessingService;
 
     @Override
     public SendMessage handleUserMessage(Long chatId, Integer messageId, String text) {
+        // Новый путь: если в конфиге есть deal-system-prompt, используем ИИ-логику
+        if (gptConfig.getDealSystemPrompt() != null && !gptConfig.getDealSystemPrompt().isBlank()) {
+            GptDealResponse gptResponse = ((ChatGptServiceImpl) chatGptService).getDealSystemResponseForUser(chatId, text);
+            return actionProcessingService.processAction(chatId, gptResponse);
+        }
+
         UserSession session = sessionService.getSession(chatId);
 
         // Если ждём цену от клиента
@@ -65,13 +74,18 @@ public class ConversationServiceImpl implements ConversationService {
             return buildPlain(chatId, "Уточните, пожалуйста, модель телефона (например, iPhone 13 Pro или Samsung Galaxy S23).");
         }
 
-        String modelDisplay = session.getPhoneModel();
-        String modelKey = ModelKeyNormalizer.normalize(modelDisplay);
-        PhonePrice price = phonePriceService.getPhonePrice(modelKey).orElse(null);
+        // --- Новый способ получения цены ---
+        // Здесь предполагается, что session.getPhoneModel() возвращает строку вида "Apple 13 128" или аналогично.
+        // В реальном проекте лучше хранить brand/model/storageGb отдельно в UserSession и IntentDetectionResult.
+        String[] parts = session.getPhoneModel().split(" ");
+        String brand = parts.length > 0 ? parts[0] : null;
+        String model = parts.length > 1 ? parts[1] : null;
+        Integer storageGb = parts.length > 2 ? Integer.valueOf(parts[2]) : null;
+        PhonePrice price = phonePriceService.getPhonePrice(brand, model, storageGb).orElse(null);
         if (price == null) {
             priceRequestService.ensureOpenRequestAndSubscribeWaiter(
-                    modelKey,
-                    modelDisplay,
+                    brand + " " + model + " " + (storageGb != null ? storageGb : ""),
+                    session.getPhoneModel(),
                     chatId,
                     messageId
             );

@@ -12,6 +12,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import ru.sellerbot.config.ManagerConfig;
 import ru.sellerbot.config.PriceDefaultsConfig;
+import ru.sellerbot.dto.PhoneInfoDto;
 import ru.sellerbot.persistence.entity.PhonePriceEntity;
 import ru.sellerbot.persistence.entity.PriceRequestEntity;
 import ru.sellerbot.persistence.entity.PriceRequestStatus;
@@ -80,13 +81,26 @@ public class ManagerPriceReplyServiceImpl implements ManagerPriceReplyService {
                     .build();
         }
 
+        // Парсим информацию о телефоне из modelKey или modelDisplay (или из другого источника)
+        PhoneInfoDto phoneInfo = parsePhoneInfo(request.getModelKey(), request.getModelDisplay());
+        if (phoneInfo == null) {
+            return SendMessage.builder()
+                    .chatId(managerChatId)
+                    .text("Не удалось определить параметры телефона (бренд, модель, память) из заявки.")
+                    .build();
+        }
+
         int minPrice = (int) Math.round(basePrice * priceDefaultsConfig.getMinMultiplier());
         int maxPrice = (int) Math.round(basePrice * priceDefaultsConfig.getMaxMultiplier());
 
-        PhonePriceEntity entity = phonePriceRepository.findByModelKey(request.getModelKey())
-                .orElseGet(PhonePriceEntity::new);
-        entity.setModelKey(request.getModelKey());
-        entity.setModel(request.getModelDisplay());
+        PhonePriceEntity entity = phonePriceRepository.findByBrandAndModelAndStorageGb(
+                phoneInfo.getBrand(),
+                phoneInfo.getModel(),
+                phoneInfo.getStorageGb()
+        ).orElseGet(PhonePriceEntity::new);
+        entity.setBrand(phoneInfo.getBrand());
+        entity.setModel(phoneInfo.getModel());
+        entity.setStorageGb(phoneInfo.getStorageGb());
         entity.setBasePrice(basePrice);
         entity.setMinPrice(minPrice);
         entity.setMaxPrice(maxPrice);
@@ -133,5 +147,25 @@ public class ManagerPriceReplyServiceImpl implements ManagerPriceReplyService {
             return null;
         }
     }
-}
 
+    private PhoneInfoDto parsePhoneInfo(String modelKey, String modelDisplay) {
+        // Пример простого парсинга: Apple_iPhone13_128 или "Apple iPhone 13 128"
+        String source = modelKey != null ? modelKey : modelDisplay;
+        if (source == null) return null;
+        String[] parts = source.replace('_', ' ').split("[ ,]+", 3);
+        if (parts.length < 3) return null;
+        return PhoneInfoDto.builder()
+                .brand(parts[0])
+                .model(parts[1])
+                .storageGb(parseIntSafe(parts[2]))
+                .build();
+    }
+
+    private Integer parseIntSafe(String s) {
+        try {
+            return Integer.valueOf(s.replaceAll("[^0-9]", ""));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+}

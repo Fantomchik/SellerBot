@@ -47,4 +47,3 @@ public class PriceRequestEntity {
     @Column
     private Integer resolvedPrice;
 }
-

@@ -5,7 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.stereotype.Service;
 import ru.sellerbot.dto.IntentDetectionResult;
-import ru.sellerbot.model.IntentType;
+import ru.sellerbot.model.enums.IntentType;
 import ru.sellerbot.service.IntentDetectionService;
 
 @Service

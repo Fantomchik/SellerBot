@@ -13,19 +13,23 @@ import ru.sellerbot.persistence.entity.PriceRequestStatus;
 @Repository
 public interface PriceRequestRepository extends JpaRepository<PriceRequestEntity, Long> {
 
+    @Query("SELECT p FROM PriceRequestEntity p WHERE p.managerChatId = :managerChatId AND p.managerRequestMessageId = :managerRequestMessageId AND p.status = :status")
     Optional<PriceRequestEntity> findByManagerChatIdAndManagerRequestMessageIdAndStatus(
-            Long managerChatId,
-            Integer managerRequestMessageId,
-            PriceRequestStatus status
+            @Param("managerChatId") Long managerChatId,
+            @Param("managerRequestMessageId") Integer managerRequestMessageId,
+            @Param("status") PriceRequestStatus status
     );
 
-    Optional<PriceRequestEntity> findByModelKeyAndStatus(String modelKey, PriceRequestStatus status);
+    @Query("SELECT p FROM PriceRequestEntity p WHERE p.modelKey = :modelKey AND p.status = :status")
+    Optional<PriceRequestEntity> findByModelKeyAndStatus(
+            @Param("modelKey") String modelKey,
+            @Param("status") PriceRequestStatus status
+    );
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select r from PriceRequestEntity r where r.modelKey = :modelKey and r.status = :status")
+    @Query("SELECT r FROM PriceRequestEntity r WHERE r.modelKey = :modelKey AND r.status = :status")
     Optional<PriceRequestEntity> findByModelKeyAndStatusForUpdate(
             @Param("modelKey") String modelKey,
             @Param("status") PriceRequestStatus status
     );
 }
-

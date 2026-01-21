@@ -15,11 +15,11 @@ public class PhonePriceServiceImpl implements PhonePriceService {
     private final PhonePriceRepository phonePriceRepository;
 
     @Override
-    public Optional<PhonePrice> getPhonePrice(String modelKey) {
-        if (modelKey == null || modelKey.isBlank()) {
+    public Optional<PhonePrice> getPhonePrice(String brand, String model, Integer storageGb) {
+        if (brand == null || model == null || storageGb == null) {
             return Optional.empty();
         }
-        return phonePriceRepository.findByModelKey(modelKey.trim())
+        return phonePriceRepository.findByBrandAndModelAndStorageGb(brand.trim(), model.trim(), storageGb)
                 .map(PhonePriceMapper::toDomain);
     }
 }

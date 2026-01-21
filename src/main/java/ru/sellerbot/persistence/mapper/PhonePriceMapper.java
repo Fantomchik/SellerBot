@@ -12,7 +12,9 @@ public class PhonePriceMapper {
             return null;
         }
         return PhonePrice.builder()
+                .brand(entity.getBrand())
                 .model(entity.getModel())
+                .storageGb(entity.getStorageGb())
                 .basePrice(entity.getBasePrice())
                 .minPrice(entity.getMinPrice())
                 .maxPrice(entity.getMaxPrice())
